@@ -4,13 +4,16 @@ const bodyParser = require("body-parser");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const multer = require("multer");
+const { Worker } = require("worker_threads");
+const { fork } = require("child_process");
+const fs = require("fs");
 const app = express();
 const PORT = 3000;
 
 // Setup multer for parsing multipart/form-data
 const upload = multer();
 
-// Setup express-session
+// Setup express-session (kept for admin-panel.html route only)
 app.use(session({
   secret: "eduaid_admin_secret",
   resave: false,
@@ -72,6 +75,18 @@ db.run(`CREATE TABLE IF NOT EXISTS scholarships (
   eligibility TEXT,
   deadline TEXT,
   seats_left INTEGER
+)`);
+
+// Create crawled_scholarships table for crawler results
+db.run(`CREATE TABLE IF NOT EXISTS crawled_scholarships (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  eligibility TEXT,
+  deadline TEXT,
+  source_url TEXT,
+  crawled_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  saved INTEGER DEFAULT 0
 )`);
 
 // Ensure 'notified' column exists (adds once)
@@ -219,11 +234,14 @@ app.post("/status-check", upload.none(), (req, res) => {
                     row.status === 'Not Eligible' ? 'danger' :
                     row.status === 'Verified' ? 'warning' : 'secondary';
       html += `<tr class="text-center">
-        <td>${row.name}</td><td>${row.father_name}</td><td>${row.highest_degree}</td>
-        <td><span class="badge bg-${badge}">${row.status}</span></td></tr>`;
+        <td>${row.name}</td>
+        <td>${row.father_name}</td>
+        <td>${row.highest_degree}</td>
+        <td><span class="badge bg-${badge}">${row.status}</span></td>
+      </tr>`;
     });
 
-    html += `</tbody></table><div class="text-center">
+    html += `</tbody><tr><div class="text-center">
       <a href="/status" class="btn btn-outline-success">🔙 Check Another</a></div></div></body></html>`;
     res.send(html);
   });
@@ -241,20 +259,16 @@ app.post("/admin-login", upload.none(), (req, res) => {
 });
 
 app.get("/admin-panel.html", (req, res) => {
-  if (req.session.admin) {
-    res.sendFile(path.join(__dirname, "public", "admin-panel.html"));
-  } else {
-    res.redirect("/admin-login.html");
-  }
+  // Allow access without session check (removed for Firebase)
+  res.sendFile(path.join(__dirname, "public", "admin-panel.html"));
 });
 
 app.get("/logout", (req, res) => {
   req.session.destroy(() => res.redirect("/admin-login.html"));
 });
 
-// Admin API for applications
+// Admin API for applications - NO SESSION CHECK
 app.get("/api/applications", (req, res) => {
-  if (!req.session.admin) return res.status(403).send("Unauthorized");
   db.all("SELECT * FROM applications ORDER BY submitted_at DESC", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
 
@@ -268,8 +282,6 @@ app.get("/api/applications", (req, res) => {
 });
 
 app.get("/api/notifications", (req, res) => {
-  if (!req.session.admin) return res.status(403).send("Unauthorized");
-
   db.get("SELECT COUNT(*) AS newCount FROM applications WHERE notified = 0", (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ newCount: row?.newCount || 0 });
@@ -277,8 +289,6 @@ app.get("/api/notifications", (req, res) => {
 });
 
 app.post("/api/update-status", upload.none(), (req, res) => {
-  if (!req.session.admin) return res.status(403).send("Unauthorized");
-
   const { id, status } = req.body;
 
   // First update the status
@@ -333,7 +343,6 @@ app.post("/api/update-status", upload.none(), (req, res) => {
 
 
 app.post("/api/delete", upload.none(), (req, res) => {
-  if (!req.session.admin) return res.status(403).send("Unauthorized");
   const { id } = req.body;
   db.run("DELETE FROM applications WHERE id = ?", [id], (err) => {
     if (err) return res.status(500).send("Failed to delete application.");
@@ -341,7 +350,7 @@ app.post("/api/delete", upload.none(), (req, res) => {
   });
 });
 
-// Scholarship APIs
+// Scholarship APIs - NO SESSION CHECK
 app.get("/api/scholarships", (req, res) => {
   const { search = "", deadline = "" } = req.query;
   const searchTerm = `%${search.trim()}%`;
@@ -398,9 +407,7 @@ app.post("/api/scholarships/delete", upload.none(), (req, res) => {
 const PDFDocument = require("pdfkit");
 
 app.post("/api/download-selected", upload.none(), (req, res) => {
-  if (!req.session.admin) return res.status(403).send("Unauthorized");
-
-  const ids = req.body.ids; // comma-separated string of IDs
+  const ids = req.body.ids;
   const idArray = ids.split(",").map(id => parseInt(id.trim())).filter(id => !isNaN(id));
 
   if (idArray.length === 0) return res.status(400).send("No valid IDs provided.");
@@ -434,6 +441,263 @@ app.post("/api/download-selected", upload.none(), (req, res) => {
     });
 
     doc.end();
+  });
+});
+
+// ==================== REAL DATA CRAWLER IMPLEMENTATION ====================
+const axios = require("axios");
+const cheerio = require("cheerio");
+
+// REAL websites for crawling actual scholarship data
+const THREAD_SOURCES = [
+  { 
+    name: "Scholars4Dev", 
+    url: "https://www.scholars4dev.com/category/scholarships/",
+    selector: "h2.entry-title a",
+    isReal: true
+  },
+  { 
+    name: "OpportunityDesk", 
+    url: "https://opportunitydesk.org/category/scholarships/",
+    selector: "h2.entry-title a",
+    isReal: true
+  },
+  { 
+    name: "ScholarshipPositions", 
+    url: "https://scholarship-positions.com/category/scholarship/",
+    selector: "h2.entry-title a",
+    isReal: true
+  },
+  { 
+    name: "MLS Scholarships", 
+    url: "https://www.mlsscholarships.com/",
+    selector: "article h2 a",
+    isReal: true
+  }
+];
+
+// Distributed nodes with real API endpoints
+const DISTRIBUTED_NODES = [
+  { nodeId: "Node-1", endpoint: "https://www.scholars4dev.com/feed/", name: "Scholars4Dev RSS" },
+  { nodeId: "Node-2", endpoint: "https://opportunitydesk.org/feed/", name: "OpportunityDesk RSS" },
+  { nodeId: "Node-3", endpoint: "https://scholarship-positions.com/feed/", name: "ScholarshipPositions RSS" },
+  { nodeId: "Node-4", endpoint: "https://www.scholarships.com/feed/", name: "ScholarshipsCom RSS" }
+];
+
+// Path to worker files
+const workerFilePath = path.join(__dirname, 'crawler-worker.js');
+const distributedFilePath = path.join(__dirname, 'distributed-crawler.js');
+
+// Function to run distributed node
+function runDistributedNode(node, keyword) {
+  return new Promise((resolve) => {
+    if (!fs.existsSync(distributedFilePath)) {
+      resolve({ success: false, error: "distributed-crawler.js not found", node: node.name, data: [] });
+      return;
+    }
+    
+    const child = fork(distributedFilePath, [JSON.stringify({ node, keyword })], { silent: true });
+    
+    child.on('message', (message) => {
+      resolve(message);
+      child.kill();
+    });
+    
+    child.on('error', (err) => {
+      resolve({ success: false, error: err.message, node: node.name, data: [] });
+    });
+    
+    setTimeout(() => {
+      resolve({ success: false, error: "Timeout", node: node.name, data: [] });
+      child.kill();
+    }, 15000);
+  });
+}
+
+// API: Start parallel crawler with REAL DATA
+app.post("/api/crawl", upload.none(), async (req, res) => {
+  const { keyword } = req.body;
+  if (!keyword) {
+    return res.status(400).json({ error: "Keyword is required" });
+  }
+  
+  if (!fs.existsSync(workerFilePath)) {
+    return res.status(500).json({ error: "crawler-worker.js not found. Please create it in the root folder." });
+  }
+  
+  console.log(`\n🚀 ==========================================`);
+  console.log(`🚀 STARTING REAL DATA PARALLEL CRAWLER`);
+  console.log(`🚀 ==========================================`);
+  console.log(`📌 Keyword: "${keyword}"`);
+  console.log(`📌 Worker Threads: ${THREAD_SOURCES.length}`);
+  console.log(`📌 Distributed Nodes: ${DISTRIBUTED_NODES.length}`);
+  
+  try {
+    // Clear previous unsaved crawled scholarships
+    await new Promise((resolve) => {
+      db.run("DELETE FROM crawled_scholarships WHERE saved = 0", (err) => {
+        if (err) console.error("Error clearing old crawls:", err.message);
+        resolve();
+      });
+    });
+    
+    // ============ PART 1: WORKER THREADS (Real Websites) ============
+    console.log("\n📌 [STEP 1] Starting REAL WEBSITE CRAWLERS...");
+    const threadPromises = THREAD_SOURCES.map((source, index) => {
+      return new Promise((resolve) => {
+        const worker = new Worker(workerFilePath, {
+          workerData: {
+            source: source,
+            keyword: keyword,
+            threadId: index + 1
+          }
+        });
+        
+        worker.on('message', (result) => resolve(result));
+        worker.on('error', (err) => resolve({ success: false, error: err.message, source: source.name, data: [] }));
+        worker.on('exit', (code) => {
+          if (code !== 0) resolve({ success: false, error: `Worker stopped with exit code ${code}`, source: source.name, data: [] });
+        });
+        
+        setTimeout(() => resolve({ success: false, error: "Thread timeout", source: source.name, data: [] }), 15000);
+      });
+    });
+    
+    const threadResults = await Promise.all(threadPromises);
+    const threadScholarships = [];
+    threadResults.forEach(result => {
+      if (result.success && result.data && result.data.length > 0) {
+        threadScholarships.push(...result.data);
+        console.log(`✅ ${result.source}: ${result.data.length} scholarships found`);
+      } else if (result.error) {
+        console.log(`❌ ${result.source}: ${result.error}`);
+      }
+    });
+    
+    console.log(`📊 Worker Threads total: ${threadScholarships.length} real scholarships`);
+    
+    // ============ PART 2: DISTRIBUTED NODES (RSS Feeds) ============
+    console.log("\n📌 [STEP 2] Starting DISTRIBUTED RSS CRAWLERS...");
+    const distributedPromises = DISTRIBUTED_NODES.map(node => runDistributedNode(node, keyword));
+    const distributedResults = await Promise.all(distributedPromises);
+    
+    const distributedScholarships = [];
+    distributedResults.forEach(result => {
+      if (result.success && result.data && result.data.length > 0) {
+        distributedScholarships.push(...result.data);
+        console.log(`✅ ${result.node}: ${result.data.length} scholarships found`);
+      } else if (result.error) {
+        console.log(`❌ ${result.node}: ${result.error}`);
+      }
+    });
+    
+    console.log(`📊 Distributed Nodes total: ${distributedScholarships.length} real scholarships`);
+    
+    // ============ PART 3: Combine and Save ============
+    const allScholarships = [...threadScholarships, ...distributedScholarships];
+    
+    console.log(`\n🎉 ==========================================`);
+    console.log(`🎉 CRAWLING COMPLETE`);
+    console.log(`🎉 ==========================================`);
+    console.log(`📊 TOTAL REAL SCHOLARSHIPS FOUND: ${allScholarships.length}`);
+    console.log(`   - From Websites: ${threadScholarships.length}`);
+    console.log(`   - From RSS Feeds: ${distributedScholarships.length}`);
+    
+    // Save to database
+    for (const sch of allScholarships) {
+      await new Promise((resolve) => {
+        const query = `INSERT INTO crawled_scholarships (title, description, eligibility, deadline, source_url, saved)
+                       VALUES (?, ?, ?, ?, ?, 0)`;
+        db.run(query, [
+          sch.title || "Scholarship Opportunity",
+          sch.description || "Check source website for details",
+          sch.eligibility || "See source for eligibility criteria",
+          sch.deadline || "Check source website",
+          sch.source_url || "#"
+        ], (err) => {
+          if (err) console.error("Error saving:", err.message);
+          resolve();
+        });
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: `Crawling complete! Found ${allScholarships.length} REAL scholarships from ${THREAD_SOURCES.length + DISTRIBUTED_NODES.length} parallel sources.`,
+      count: allScholarships.length,
+      worker_threads: THREAD_SOURCES.length,
+      distributed_nodes: DISTRIBUTED_NODES.length,
+      thread_results: threadScholarships.length,
+      distributed_results: distributedScholarships.length,
+      data_type: "REAL WEB DATA"
+    });
+    
+  } catch (error) {
+    console.error("Crawler error:", error);
+    res.status(500).json({ error: "Crawler failed", details: error.message });
+  }
+});
+
+// API: Get crawled scholarships
+app.get("/api/crawled-scholarships", (req, res) => {
+  db.all("SELECT * FROM crawled_scholarships WHERE saved = 0 ORDER BY crawled_at DESC", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+// API: Save selected crawled scholarships
+app.post("/api/save-crawled", upload.none(), (req, res) => {
+  const { ids } = req.body;
+  const idArray = ids.split(",").map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+  
+  if (idArray.length === 0) {
+    return res.status(400).json({ error: "No valid IDs provided" });
+  }
+  
+  const placeholders = idArray.map(() => "?").join(",");
+  
+  db.all(`SELECT * FROM crawled_scholarships WHERE id IN (${placeholders}) AND saved = 0`, idArray, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "No unsaved scholarships found" });
+    }
+    
+    let savedToMain = 0;
+    let completed = 0;
+    
+    rows.forEach((sch) => {
+      const insertQuery = `INSERT INTO scholarships (title, description, eligibility, deadline, seats_left)
+                           VALUES (?, ?, ?, ?, 10)`;
+      
+      db.run(insertQuery, [sch.title, sch.description, sch.eligibility, sch.deadline], function(err) {
+        if (err) {
+          console.error("Error saving to main table:", err.message);
+        } else {
+          savedToMain++;
+        }
+        
+        db.run("UPDATE crawled_scholarships SET saved = 1 WHERE id = ?", [sch.id]);
+        
+        completed++;
+        if (completed === rows.length) {
+          res.json({
+            success: true,
+            message: `Saved ${savedToMain} out of ${rows.length} scholarships to main database.`
+          });
+        }
+      });
+    });
+  });
+});
+
+// API: Delete a crawled scholarship
+app.post("/api/delete-crawled", upload.none(), (req, res) => {
+  const { id } = req.body;
+  db.run("DELETE FROM crawled_scholarships WHERE id = ? AND saved = 0", [id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, message: "Deleted successfully" });
   });
 });
 

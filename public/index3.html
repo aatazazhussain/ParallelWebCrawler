@@ -7,6 +7,41 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    .hero-section {
+      background: linear-gradient(rgba(1, 123, 95, 0.7), rgba(1, 123, 95, 0.7)), url('images/banner.jpg') no-repeat center center;
+      background-size: cover;
+      padding: 100px 0;
+    }
+    .card-square {
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      height: 100%;
+    }
+    .carousel-item img {
+      height: 120px;
+      object-fit: contain;
+      margin: auto;
+    }
+    footer {
+      background-color: #025c46;
+      color: white;
+    }
+    .footer-links a {
+      color: #f1f1f1;
+      text-decoration: none;
+      display: block;
+      margin: 5px 0;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    .social-icons a {
+      color: white;
+      margin: 0 10px;
+      font-size: 1.3rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -22,101 +57,96 @@
     </button>
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item"><a class="nav-link text-success" href="how-it-works.html">How it Works?</a></li>
-        <li class="nav-item"><a class="nav-link text-success" href="scholarships.html">Find Your Scholarship</a></li>
-        <a href="status.html" class="nav-link text-success">Check Application Status</a>
+        <li class="nav-item"><a class="nav-link text-success" href="how-it-works.html">Working</a></li>
+        <li class="nav-item"><a class="nav-link text-success" href="scholarships.html">Scholarships</a></li>
+        <li class="nav-item"><a class="nav-link text-success" href="status.html">Application Status</a></li>
         <li class="nav-item"><a class="nav-link text-success" href="about.html">About Us</a></li>
         <li class="nav-item"><a class="nav-link text-success" href="news.html">News</a></li>
       </ul>
       <a class="btn btn-success ms-3" href="contact.html">Contact Us</a>
-     <a class="btn btn-success ms-3" href="home.html">Logout</a>
-
+      <a class="btn btn-success ms-2" href="home.html">Logout</a>
     </div>
   </div>
 </nav>
 
-<!-- Hero Section (Now directly under navbar) -->
-<section class="hero-section text-white d-flex align-items-center">
-  <div class="container text-center">
+<!-- Hero Section -->
+<section class="hero-section text-white text-center d-flex align-items-center">
+  <div class="container">
     <h1 class="fw-bold">Fund Your Future With EduAid</h1>
-    <p class="lead">Pakistan first Study Now, Pay Later (SNPL) digital platform</p>
+    <p class="lead">Pakistan's first Study Now, Pay Later (SNPL) digital platform</p>
   </div>
 </section>
 
-<!-- Our Inspiration Section -->
-<section class="inspiration-section">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-4 text-center mb-3 mb-md-0">
-           <h2> Our Inspiration </h2>
-        <img src="images/aleena-nadeem.jpg" alt="Aleena Nadeem" class="img-fluid inspiration-img" />
-      </div>
-      <div class="col-md-8">
-        <h2> Aleena Nadeem </h2>
-        <p style="text-align: justify; margin-top: 0;">
-          Aleena Nadeem story is one of courage, resilience, and hope. Despite financial barriers, she pursued her dream of quality education and emerged as a symbol of what can be achieved when potential meets opportunity. Her journey inspired the creation of <strong>Edufi</strong> � a platform to empower thousands like her to study now and pay later.
-        </p>
-        <a href="#" class="btn btn-outline-success mt-2">Read More</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Statistic Section -->
-<section class="py-5" style="background-color: #017b5f;">
-  <div class="container">
-    <div class="quote-box text-center mx-auto text-white">
-      <h2 class="display-4 fw-bold">42%</h2>
-      <p class="fs-5 mb-2">of schooling in Pakistan is carried out by private schools</p>
-      <p class="mb-3">Private schooling can be expensive but not out of reach.</p>
-      <h5 class="fw-semibold">On a Mission to Improve Access to Quality Education in Pakistan</h5>
-    </div>
-  </div>
-</section>
-
-
-
-<!-- Insights Section (Moved Up) -->
+<!-- Inspiration Section -->
 <section class="py-5">
   <div class="container">
-    <h3 class="mb-4 text-success text-center">Insights & Impact</h3>
-    <div class="row">
-      <div class="col-md-6 col-lg-3 mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-4 text-center mb-3">
+        <h2>Our Inspiration</h2>
+        <img src="images/inspiration.png" alt="Muhammad (S.A.A.W)" class="img-fluid rounded shadow-sm" />
+      </div>
+      <div class="col-md-8">
+        <h3>Muhammad (S.A.A.W)</h3>
+        <p style="text-align: justify;">
+          Prophet Muhammad ﷺ's life is a beacon of wisdom, compassion, and pursuit of knowledge. Born in a society clouded by ignorance, he championed the cause of learning for all — urging men and women alike to seek knowledge from cradle to grave. His teachings emphasized literacy, critical thinking, and moral development. He transformed a generation through education and character, proving that enlightened minds can reshape civilizations. His legacy remains a timeless reminder that knowledge is not just power — it's a sacred duty and the key to justice and human dignity.
+        </p>
+        <a href="https://muslim.sg/articles/prophet-muhammad-s-a-w-as-a-teacher" target="_blank" class="btn btn-outline-success">Read More</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Statistics -->
+<section class="py-5" style="background-color: #017b5f;">
+  <div class="container text-white text-center">
+    <h2 class="display-4 fw-bold">42%</h2>
+    <p class="fs-5">of schooling in Pakistan is carried out by private schools</p>
+    <p>Private schooling can be expensive but not out of reach.</p>
+    <h5 class="fw-semibold">On a Mission to Improve Access to Quality Education in Pakistan</h5>
+  </div>
+</section>
+
+<!-- Articles Section -->
+<section class="py-5">
+  <div class="container">
+    <h3 class="text-center text-success mb-4">Insights & Impact</h3>
+    <div class="row g-4">
+      <div class="col-md-3">
         <div class="card h-100">
-          <img src="images/author1.jpg" class="card-img-top" alt="Author 1" />
+          <img src="images/author1.jpg" class="card-img-top card-square" alt="Author 1">
           <div class="card-body">
-            <h5 class="card-title">Challenges in Pakistan's Education System</h5>
-            <p class="card-text">A deep dive into systemic challenges facing students in underserved regions of Pakistan.</p>
+            <h5 class="card-title">Challenges in Education</h5>
+            <p class="card-text">A deep dive into challenges in underserved regions of Pakistan.</p>
             <a href="#" class="btn btn-success btn-sm">Read More</a>
           </div>
         </div>
       </div>
-      <div class="col-md-6 col-lg-3 mb-4">
+      <div class="col-md-3">
         <div class="card h-100">
-          <img src="images/author2.jpg" class="card-img-top" alt="Author 2" />
+          <img src="images/author2.jpg" class="card-img-top card-square" alt="Author 2">
           <div class="card-body">
-            <h5 class="card-title">EduAid�s Financial Model</h5>
-            <p class="card-text">How EduAid is building sustainable, student-friendly financing for higher education.</p>
+            <h5 class="card-title">EduAid’s Financial Model</h5>
+            <p class="card-text">Building sustainable, student-friendly financing models.</p>
             <a href="#" class="btn btn-success btn-sm">Read More</a>
           </div>
         </div>
       </div>
-      <div class="col-md-6 col-lg-3 mb-4">
+      <div class="col-md-3">
         <div class="card h-100">
-          <img src="images/author3.jpg" class="card-img-top" alt="Author 3" />
+          <img src="images/author3.jpg" class="card-img-top card-square" alt="Author 3">
           <div class="card-body">
-            <h5 class="card-title">Bridging the Urban-Rural Gap</h5>
-            <p class="card-text">Education disparities between rural and urban Pakistan � and what can be done.</p>
+            <h5 class="card-title">Urban-Rural Gap</h5>
+            <p class="card-text">Education disparities and what can be done to bridge them.</p>
             <a href="#" class="btn btn-success btn-sm">Read More</a>
           </div>
         </div>
       </div>
-      <div class="col-md-6 col-lg-3 mb-4">
+      <div class="col-md-3">
         <div class="card h-100">
-          <img src="images/author4.jpg" class="card-img-top" alt="Author 4" />
+          <img src="images/author4.jpg" class="card-img-top card-square" alt="Author 4">
           <div class="card-body">
-            <h5 class="card-title">The Future of Education Financing</h5>
-            <p class="card-text">Exploring innovative funding models to make education more inclusive and accessible.</p>
+            <h5 class="card-title">Future of Financing</h5>
+            <p class="card-text">Exploring innovative education funding models.</p>
             <a href="#" class="btn btn-success btn-sm">Read More</a>
           </div>
         </div>
@@ -125,36 +155,79 @@
   </div>
 </section>
 
-<!-- Top Universities (Now Below Insights) -->
+<!-- University Carousel -->
 <section class="py-5 bg-light">
   <div class="container text-center">
-    <h3 class="mb-4 text-success">Top Partner Universities in Pakistan</h3>
-    <div class="row justify-content-center">
-      <div class="col-6 col-md-2 mb-3">
-        <img src="images/pu.png" class="img-fluid" alt="PU" />
+    <h3 class="text-success mb-4">Top Partner Universities in Pakistan</h3>
+    <div id="universityCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="images/pu.png" class="d-block w-25" alt="PU">
+          <p class="text-dark mt-2">Punjab University</p>
+        </div>
+        <div class="carousel-item">
+          <img src="images/lums.png" class="d-block w-25" alt="LUMS">
+          <p class="text-dark mt-2">LUMS</p>
+        </div>
+        <div class="carousel-item">
+          <img src="images/fast.png" class="d-block w-25" alt="FAST">
+          <p class="text-dark mt-2">FAST-NUCES</p>
+        </div>
+        <div class="carousel-item">
+          <img src="images/nust.png" class="d-block w-25" alt="NUST">
+          <p class="text-dark mt-2">NUST</p>
+        </div>
+        <div class="carousel-item">
+          <img src="images/pmas.png" class="d-block w-25" alt="PMAS Arid University">
+          <p class="text-dark mt-2">PMAS Arid Agriculture University</p>
+        </div>
       </div>
-      <div class="col-6 col-md-2 mb-3">
-        <img src="images/lums.png" class="img-fluid" alt="LUMS" />
-      </div>
-      <div class="col-6 col-md-2 mb-3">
-        <img src="images/fast.png" class="img-fluid" alt="FAST" />
-      </div>
-      <div class="col-6 col-md-2 mb-3">
-        <img src="images/nust.png" class="img-fluid" alt="NUST" />
-      </div>
-      <div class="col-6 col-md-2 mb-3">
-        <img src="images/pmas.png" class="img-fluid" alt="PMAS Arid University" />
-      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#universityCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon bg-success rounded-circle" aria-hidden="true"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#universityCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon bg-success rounded-circle" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 </section>
 
 <!-- Footer -->
-<footer class="bg-success text-white text-center py-3">
-  <p class="mb-0">� 2025 EduAid | Empowering Education in Pakistan</p>
+<footer class="pt-5 pb-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <h5>About EduAid</h5>
+        <p>Empowering students across Pakistan with flexible study-now, pay-later education financing.</p>
+      </div>
+      <div class="col-md-4 mb-3 footer-links">
+        <h5>Quick Links</h5>
+        <a href="#">Home</a>
+        <a href="#">Scholarships</a>
+        <a href="#">How it Works</a>
+        <a href="#">News</a>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h5>Contact Us</h5>
+        <p>Email: info@eduaid.pk</p>
+        <p>Phone: +92 300 0000000</p>
+        <div class="social-icons">
+          <a href="#"><i class="bi bi-facebook"></i></a>
+          <a href="#"><i class="bi bi-twitter"></i></a>
+          <a href="#"><i class="bi bi-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      &copy; 2025 EduAid | Empowering Education in Pakistan
+    </div>
+  </div>
 </footer>
+
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>AOS.init();</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </body>
 </html>

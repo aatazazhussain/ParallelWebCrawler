@@ -5,11 +5,44 @@
   <title>EduAid - Welcome</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAod8Ca51iGtv3wyUdNsbrWthJL9sgtZwI",
+      authDomain: "eduaid-e217b.firebaseapp.com",
+      projectId: "eduaid-e217b",
+      storageBucket: "eduaid-e217b.firebasestorage.app",
+      messagingSenderId: "302545396495",
+      appId: "1:302545396495:web:dbe2198d9c4a5540a4947a",
+      measurementId: "G-FMPQCLZGK9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.auth = auth;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+  </script>
+
   <style>
     body {
-      background: linear-gradient(to right, #e3f2fd, #e8f5e9);
+      background: linear-gradient(-45deg, #e3f2fd, #e8f5e9, #f0f4c3, #fff3e0);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
       min-height: 100vh;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     .card {
@@ -53,125 +86,222 @@
 
     h2 {
       font-weight: bold;
+      font-size: calc(1.5rem + 1vw);
+    }
+
+    footer {
+      margin-top: 60px;
+      padding: 20px 0;
+      font-size: 0.9rem;
+      color: #666;
+      border-top: 1px solid #ccc;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .ticker-wrapper {
+      overflow: hidden;
+      width: 100%;
+      border-bottom: 2px solid #4CAF50;
+      background-color: #ffffffcc;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .ticker-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: scroll-left 15s linear infinite;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
     }
   </style>
 </head>
 <body>
 
 <div class="container py-5">
-  <h2 class="text-center text-success mb-4">🎓 Welcome to <strong>EduAid</strong></h2>
-
+  <!-- Animated Welcome Banner -->
+  <div class="ticker-wrapper bg-light py-2 mb-3">
+    <div class="ticker-content">
+      <h2 class="m-0 text-success fw-bold">🎓 Welcome to <strong>EduAid</strong> — Empowering Futures Through Education</h2>
+    </div>
+  </div>
+  
+  <!-- Tabs -->
   <div class="card mx-auto p-3" style="max-width: 500px;">
-    <div class="card-body">
+    <ul class="nav nav-tabs justify-content-center" id="authTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="user-login-tab" data-bs-toggle="tab" data-bs-target="#user-login" type="button">User Login</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="user-register-tab" data-bs-toggle="tab" data-bs-target="#user-register" type="button">Register</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="admin-login-tab" data-bs-toggle="tab" data-bs-target="#admin-login" type="button">Admin Login</button>
+      </li>
+    </ul>
 
-      <!-- Tabs -->
-      <ul class="nav nav-tabs justify-content-center" id="authTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="user-login-tab" data-bs-toggle="tab" data-bs-target="#user-login" type="button">User Login</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="user-register-tab" data-bs-toggle="tab" data-bs-target="#user-register" type="button">Register</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="admin-login-tab" data-bs-toggle="tab" data-bs-target="#admin-login" type="button">Admin Login</button>
-        </li>
-      </ul>
+    <!-- Tab Contents -->
+    <div class="tab-content" id="authTabsContent">
 
-      <!-- Tab Contents -->
-      <div class="tab-content" id="authTabsContent">
-        
-        <!-- User Login -->
-        <div class="tab-pane fade show active" id="user-login">
-          <form id="userLoginForm" action="/api/login" method="POST">
-            <div class="mb-3">
-              <label>Email:</label>
-              <input id="email" type="email" name="email" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label>Password:</label>
-              <input id="password" type="password" name="password" class="form-control" required>
-            </div>
-            <button class="btn btn-eduaid w-100">Login as User</button>
-          </form>
-        </div>
-
-        <!-- User Register -->
-        <div class="tab-pane fade" id="user-register">
-          <form action="/api/register" method="POST">
-            <div class="mb-3">
-              <label>Name:</label>
-              <input type="text" name="name" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label>Email:</label>
-              <input type="email" name="email" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label>Password:</label>
-              <input type="password" name="password" class="form-control" required>
-            </div>
-            <button class="btn btn-eduaid w-100">Register</button>
-          </form>
-        </div>
-
-        <!-- Admin Login -->
-        <div class="tab-pane fade" id="admin-login">
-          <form action="/admin-login" method="POST">
-            <div class="mb-3">
-              <label>Admin Username:</label>
-              <input type="text" name="username" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label>Password:</label>
-              <input type="password" name="password" class="form-control" required>
-            </div>
-            <button class="btn btn-eduaid w-100">Login as Admin</button>
-          </form>
-        </div>
-
+      <!-- User Login -->
+      <div class="tab-pane fade show active" id="user-login">
+        <form id="userLoginForm">
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-envelope-fill"></i></span>
+            <input id="loginEmail" type="email" class="form-control" placeholder="Email" required>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-lock-fill"></i></span>
+            <input id="loginPassword" type="password" class="form-control" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn btn-eduaid w-100">Login as User</button>
+          <div id="loginMessage" class="mt-2 text-center small"></div>
+        </form>
       </div>
+
+      <!-- User Register -->
+      <div class="tab-pane fade" id="user-register">
+        <form id="userRegisterForm">
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-person-fill"></i></span>
+            <input type="text" id="regName" class="form-control" placeholder="Full Name" required>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-envelope-fill"></i></span>
+            <input type="email" id="regEmail" class="form-control" placeholder="Email" required>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-lock-fill"></i></span>
+            <input type="password" id="regPassword" class="form-control" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn btn-eduaid w-100">Register</button>
+          <div id="registerMessage" class="mt-2 text-center small"></div>
+        </form>
+      </div>
+
+      <!-- Admin Login -->
+      <div class="tab-pane fade" id="admin-login">
+        <form id="adminLoginForm">
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-person-badge-fill"></i></span>
+            <input type="text" id="adminEmail" class="form-control" placeholder="Admin Email" required>
+          </div>
+          <div class="input-group mb-3">
+            <span class="input-group-text bg-white text-success"><i class="bi bi-lock-fill"></i></span>
+            <input type="password" id="adminPassword" class="form-control" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn btn-eduaid w-100">Login as Admin</button>
+          <div id="adminMessage" class="mt-2 text-center small"></div>
+        </form>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- JS -->
-<script>
-  document.getElementById("userLoginForm").addEventListener("submit", async function (e) {
+<!-- Footer -->
+<footer class="text-center">
+  <p>&copy; 2025 EduAid — Empowering Dreams Through Education 🌱</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  const auth = getAuth();
+
+  // ============ USER LOGIN (Firebase) ============
+  document.getElementById("userLoginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    const msgDiv = document.getElementById("loginMessage");
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    const formData = new URLSearchParams();
-    formData.append("email", email);
-    formData.append("password", password);
+    // Block admin email from user login
+    if (email === "admin@eduaid.com") {
+      msgDiv.innerHTML = '<span class="text-danger">This is admin account. Please use Admin Login tab.</span>';
+      return;
+    }
 
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        alert("Login failed: " + errorText);
-        return;
-      }
-
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("username", data.name);
-
-      // Redirect to homepage
-      window.location.href = "/index3.html";
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userId", user.uid);
+      localStorage.setItem("role", "student");
+      localStorage.setItem("userName", user.email.split('@')[0]);
+      msgDiv.innerHTML = '<span class="text-success">Login successful! Redirecting...</span>';
+      setTimeout(() => {
+        window.location.href = "/index3.html";
+      }, 1500);
     } catch (error) {
-      alert("Error logging in.");
-      console.error(error);
+      msgDiv.innerHTML = '<span class="text-danger">' + error.message + '</span>';
+    }
+  });
+
+  // ============ USER REGISTER (Firebase) ============
+  document.getElementById("userRegisterForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("regName").value;
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
+    const msgDiv = document.getElementById("registerMessage");
+
+    // Block admin email from registering
+    if (email === "admin@eduaid.com") {
+      msgDiv.innerHTML = '<span class="text-danger">This email cannot be used for registration.</span>';
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      localStorage.setItem("userName", name);
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userId", user.uid);
+      localStorage.setItem("role", "student");
+      msgDiv.innerHTML = '<span class="text-success">Registration successful! Redirecting...</span>';
+      setTimeout(() => {
+        window.location.href = "/index3.html";
+      }, 1500);
+    } catch (error) {
+      msgDiv.innerHTML = '<span class="text-danger">' + error.message + '</span>';
+    }
+  });
+
+  // ============ ADMIN LOGIN (HARDCODED - No Firebase) ============
+  document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("adminEmail").value;
+    const password = document.getElementById("adminPassword").value;
+    const msgDiv = document.getElementById("adminMessage");
+
+    // Hardcoded admin credentials (No Firebase)
+    if (email === "admin@eduaid.com" && password === "admin123") {
+      // Set server session if needed
+      try {
+        await fetch('/admin-set-session', { method: 'POST', credentials: 'include' });
+      } catch(err) {
+        console.log("Session endpoint not needed");
+      }
+      
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userId", "hardcoded_admin_001");
+      localStorage.setItem("role", "admin");
+      localStorage.setItem("userName", "Administrator");
+      msgDiv.innerHTML = '<span class="text-success">Admin login successful! Redirecting...</span>';
+      setTimeout(() => {
+        window.location.href = "/admin-panel.html";
+      }, 1500);
+    } else {
+      msgDiv.innerHTML = '<span class="text-danger">Invalid admin credentials. Use admin@eduaid.com / admin123</span>';
     }
   });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

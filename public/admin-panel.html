@@ -68,6 +68,15 @@
     footer {
       background: linear-gradient(to right, #198754, #145c37);
     }
+    .crawler-card {
+      background: #f8f9fa;
+      border-left: 4px solid #198754;
+      margin-bottom: 20px;
+    }
+    .spinner-border-sm {
+      width: 1rem;
+      height: 1rem;
+    }
   </style>
 </head>
 
@@ -101,6 +110,9 @@
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="schol-tab" data-bs-toggle="tab" data-bs-target="#scholarships" type="button" role="tab">Scholarships</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="crawler-tab" data-bs-toggle="tab" data-bs-target="#crawler" type="button" role="tab">🤖 Web Crawler</button>
       </li>
     </ul>
 
@@ -165,6 +177,54 @@
               <tr><td colspan="5" class="text-center">Loading...</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Crawler Tab -->
+      <div class="tab-pane fade" id="crawler" role="tabpanel" aria-labelledby="crawler-tab">
+        <h2 class="text-success mb-4 text-center">🤖 Parallel Web Crawler</h2>
+        
+        <!-- Crawl Input Section -->
+        <div class="crawler-card card p-4 mb-4">
+          <div class="row align-items-end">
+            <div class="col-md-8">
+              <label class="form-label fw-bold">Enter Keyword to Search Scholarships</label>
+              <input type="text" id="crawlKeyword" class="form-control form-control-lg" placeholder="e.g., scholarship, merit scholarship, need-based">
+            </div>
+            <div class="col-md-4">
+              <button id="startCrawlBtn" class="btn btn-success btn-lg w-100" onclick="startCrawl()">
+                🚀 Start Parallel Crawler
+              </button>
+            </div>
+          </div>
+          <div id="crawlStatus" class="mt-3 text-muted"></div>
+        </div>
+
+        <!-- Crawled Results Section -->
+        <div id="crawledResultsSection" style="display: none;">
+          <h4 class="text-primary">📋 Crawled Scholarships</h4>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-info">
+                <tr>
+                  <th><input type="checkbox" id="selectAllCrawled" onclick="toggleAllCrawled(this)"></th>
+                  <th>Title</th>
+                  <th>Description</th>
+                  <th>Eligibility</th>
+                  <th>Deadline</th>
+                  <th>Source</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="crawledTable">
+                <tr><td colspan="7" class="text-center">No crawled scholarships yet. Run a search!</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-3 text-center">
+            <button class="btn btn-primary" onclick="saveSelectedCrawled()">💾 Save Selected to Scholarships</button>
+            <button class="btn btn-secondary ms-2" onclick="refreshCrawled()">🔄 Refresh</button>
+          </div>
         </div>
       </div>
     </div>
@@ -276,7 +336,7 @@
                   data-description="${encodeURIComponent(s.description)}" data-eligibility="${encodeURIComponent(s.eligibility)}"
                   data-deadline="${s.deadline}" data-seats="${s.seats_left}">Edit</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteScholarship(${s.id})">Delete</button>
-              </td>
+               </td>
             `;
             table.appendChild(row);
           });
@@ -294,56 +354,192 @@
         });
     }, 10000);
   
-// Handle scholarship form submit
-document.getElementById('scholarshipForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+    // Handle scholarship form submit
+    document.getElementById('scholarshipForm').addEventListener('submit', function(e) {
+      e.preventDefault();
 
-  const id = document.getElementById('scholarshipId').value.trim();
-  const title = document.getElementById('title').value.trim();
-  const deadline = document.getElementById('deadline').value.trim();
-  const description = document.getElementById('description').value.trim();
-  const eligibility = document.getElementById('eligibility').value.trim();
-  const seats_left = document.getElementById('seats_left').value.trim();
+      const id = document.getElementById('scholarshipId').value.trim();
+      const title = document.getElementById('title').value.trim();
+      const deadline = document.getElementById('deadline').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const eligibility = document.getElementById('eligibility').value.trim();
+      const seats_left = document.getElementById('seats_left').value.trim();
 
-  const formData = new URLSearchParams();
-  formData.append("id", id);
-  formData.append("title", title);
-  formData.append("deadline", deadline);
-  formData.append("description", description);
-  formData.append("eligibility", eligibility);
-  formData.append("seats_left", seats_left);
+      const formData = new URLSearchParams();
+      formData.append("id", id);
+      formData.append("title", title);
+      formData.append("deadline", deadline);
+      formData.append("description", description);
+      formData.append("eligibility", eligibility);
+      formData.append("seats_left", seats_left);
 
-  const endpoint = id ? "/api/scholarships/edit" : "/api/scholarships/add";
+      const endpoint = id ? "/api/scholarships/edit" : "/api/scholarships/add";
 
-  fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString(),
-    credentials: "include"
-  })
-  .then(res => res.text())
-  .then(msg => {
-    alert(msg);
-    document.getElementById('scholarshipForm').reset();
-    document.getElementById('scholarshipId').value = "";
-    loadScholarships();
-  });
-});
+      fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString(),
+        credentials: "include"
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        document.getElementById('scholarshipForm').reset();
+        document.getElementById('scholarshipId').value = "";
+        loadScholarships();
+      });
+    });
 
-// Fill form when Edit is clicked
-document.addEventListener("click", function(e) {
-  if (e.target.classList.contains("edit-btn")) {
-    document.getElementById('scholarshipId').value = e.target.dataset.id;
-    document.getElementById('title').value = decodeURIComponent(e.target.dataset.title);
-    document.getElementById('description').value = decodeURIComponent(e.target.dataset.description);
-    document.getElementById('eligibility').value = decodeURIComponent(e.target.dataset.eligibility);
-    document.getElementById('deadline').value = e.target.dataset.deadline;
-    document.getElementById('seats_left').value = e.target.dataset.seats;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-});
+    // Fill form when Edit is clicked
+    document.addEventListener("click", function(e) {
+      if (e.target.classList.contains("edit-btn")) {
+        document.getElementById('scholarshipId').value = e.target.dataset.id;
+        document.getElementById('title').value = decodeURIComponent(e.target.dataset.title);
+        document.getElementById('description').value = decodeURIComponent(e.target.dataset.description);
+        document.getElementById('eligibility').value = decodeURIComponent(e.target.dataset.eligibility);
+        document.getElementById('deadline').value = e.target.dataset.deadline;
+        document.getElementById('seats_left').value = e.target.dataset.seats;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+
+    // ==================== CRAWLER FUNCTIONS ====================
+    
+    async function startCrawl() {
+      const keyword = document.getElementById('crawlKeyword').value.trim();
+      if (!keyword) {
+        alert('Please enter a keyword to search');
+        return;
+      }
+
+      const btn = document.getElementById('startCrawlBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Crawling...';
+      btn.disabled = true;
+
+      document.getElementById('crawlStatus').innerHTML = '<div class="alert alert-info">🔍 Starting parallel crawler with ' + keyword + '... This may take 10-15 seconds.</div>';
+
+      try {
+        const formData = new URLSearchParams();
+        formData.append('keyword', keyword);
+
+        const response = await fetch('/api/crawl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('crawlStatus').innerHTML = '<div class="alert alert-success">✅ ' + result.message + '</div>';
+          document.getElementById('crawledResultsSection').style.display = 'block';
+          refreshCrawled();
+        } else {
+          document.getElementById('crawlStatus').innerHTML = '<div class="alert alert-danger">❌ ' + result.error + '</div>';
+        }
+      } catch (error) {
+        document.getElementById('crawlStatus').innerHTML = '<div class="alert alert-danger">❌ Crawler failed: ' + error.message + '</div>';
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    async function refreshCrawled() {
+      try {
+        const response = await fetch('/api/crawled-scholarships', { credentials: 'include' });
+        const data = await response.json();
+        
+        const table = document.getElementById('crawledTable');
+        
+        if (data.length === 0) {
+          table.innerHTML = '<tr><td colspan="7" class="text-center">No crawled scholarships found. Run a search first!</td></tr>';
+          return;
+        }
+
+        table.innerHTML = '';
+        data.forEach(sch => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><input type="checkbox" class="crawled-check" value="${sch.id}"></td>
+            <td><strong>${sch.title}</strong></td>
+            <td>${sch.description ? sch.description.substring(0, 100) + '...' : 'N/A'}</td>
+            <td>${sch.eligibility ? sch.eligibility.substring(0, 80) + '...' : 'N/A'}</td>
+            <td>${sch.deadline || 'Not specified'}</td>
+            <td><small class="text-muted">${sch.source_url || 'Unknown'}</small></td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteCrawled(${sch.id})">Delete</button></td>
+          `;
+          table.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error fetching crawled scholarships:', error);
+      }
+    }
+
+    function toggleAllCrawled(source) {
+      document.querySelectorAll(".crawled-check").forEach(cb => cb.checked = source.checked);
+    }
+
+    async function saveSelectedCrawled() {
+      const selected = Array.from(document.querySelectorAll(".crawled-check:checked"))
+                            .map(cb => cb.value);
+      
+      if (selected.length === 0) {
+        alert('Please select at least one scholarship to save');
+        return;
+      }
+
+      const formData = new URLSearchParams();
+      formData.append('ids', selected.join(','));
+
+      try {
+        const response = await fetch('/api/save-crawled', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+        alert(result.message);
+        
+        if (result.success) {
+          refreshCrawled();
+          loadScholarships(); // Refresh the scholarships tab
+        }
+      } catch (error) {
+        alert('Error saving scholarships: ' + error.message);
+      }
+    }
+
+    async function deleteCrawled(id) {
+      if (!confirm('Delete this crawled scholarship?')) return;
+      
+      const formData = new URLSearchParams();
+      formData.append('id', id);
+
+      try {
+        const response = await fetch('/api/delete-crawled', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+          credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          refreshCrawled();
+        } else {
+          alert('Delete failed');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
   </script>
 </body>
 </html>

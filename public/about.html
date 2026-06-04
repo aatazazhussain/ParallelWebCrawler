@@ -10,6 +10,28 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+          footer {
+      background-color: #025c46;
+      color: white;
+    }
+    .footer-links a {
+      color: #f1f1f1;
+      text-decoration: none;
+      display: block;
+      margin: 5px 0;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    .social-icons a {
+      color: white;
+      margin: 0 10px;
+      font-size: 1.3rem;
+    }
+    </style>
   </head>
   <body>
     <!-- Navbar -->
@@ -107,26 +129,41 @@
           </div>
         </div>
 
-        <div class="row mb-5">
-          <div class="col-md-12">
-            <h3>Our Core Values</h3>
-            <ul class="values-list">
-              <li>
-                <strong>Access:</strong> Every student deserves education
-                regardless of income.
-              </li>
-              <li>
-                <strong>Integrity:</strong> We are transparent, fair, and
-                accountable in all we do.
-              </li>
-              <li>
-                <strong>Impact:</strong> We strive to create lasting change, not
-                just short-term relief.
-              </li>
-            </ul>
-          </div>
-        </div>
+       <div class="row mb-5">
+  <div class="col-12 text-center mb-4">
+    <h3 class="fw-bold">Our Core Values</h3>
+  </div>
 
+  <div class="col-md-4 mb-4" data-aos="fade-up">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body text-center">
+        <i class="bi bi-unlock fs-1 text-success mb-3"></i>
+        <h5 class="card-title fw-bold">Access</h5>
+        <p class="card-text">Every student deserves education regardless of income.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body text-center">
+        <i class="bi bi-shield-check fs-1 text-success mb-3"></i>
+        <h5 class="card-title fw-bold">Integrity</h5>
+        <p class="card-text">We are transparent, fair, and accountable in all we do.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body text-center">
+        <i class="bi bi-lightbulb fs-1 text-success mb-3"></i>
+        <h5 class="card-title fw-bold">Impact</h5>
+        <p class="card-text">We strive to create lasting change, not just short-term relief.</p>
+      </div>
+    </div>
+  </div>
+</div>
         <div class="vision-quote">
           <h4 class="fw-bold">
             "Education is not a privilege, it's a right. We are here to make
@@ -138,9 +175,36 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-success text-white text-center py-3">
-      <p class="mb-0">© 2025 EduAid | Empowering Education in Pakistan</p>
-    </footer>
+    <footer class="pt-5 pb-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <h5>About EduAid</h5>
+        <p>Empowering students across Pakistan with flexible study-now, pay-later education financing.</p>
+      </div>
+      <div class="col-md-4 mb-3 footer-links">
+        <h5>Quick Links</h5>
+        <a href="#">Home</a>
+        <a href="#">Scholarships</a>
+        <a href="#">How it Works</a>
+        <a href="#">News</a>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h5>Contact Us</h5>
+        <p>Email: info@eduaid.pk</p>
+        <p>Phone: +92 300 0000000</p>
+        <div class="social-icons">
+          <a href="#"><i class="bi bi-facebook"></i></a>
+          <a href="#"><i class="bi bi-twitter"></i></a>
+          <a href="#"><i class="bi bi-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-3">
+      &copy; 2025 EduAid | Empowering Education in Pakistan
+    </div>
+  </div>
+</footer>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
       AOS.init();
